@@ -6,7 +6,7 @@ module.exports = function (db) {
     router.get('/', function (req, res, next) {
         console.log(req.query.page);
         const page = req.query.page || 0;
-        const limit = req.query.limit || 0;
+        const limit = req.query.limit || 50;
         let offset = page * limit;
 
 
