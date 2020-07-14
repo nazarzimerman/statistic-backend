@@ -9,17 +9,26 @@ module.exports = function (db) {
         const limit = req.query.limit || 50;
         let offset = page * limit;
 
+        let countQuery = `SELECT count(*) as rowCount from (SELECT id FROM  user INNER JOIN userStatistic
+         ON user.id = userStatistic.user_id GROUP BY id)`;
 
-        let sq = `SELECT id, first_name, last_name, email, gender, ip_address,  SUM (clicks) AS clicks, SUM ( page_views) AS page
+        let pageQuery = `SELECT id, first_name, last_name, email, gender, ip_address,  SUM (clicks) AS clicks, SUM ( page_views) AS page
          FROM (SELECT * FROM  user INNER JOIN userStatistic
          ON user.id = userStatistic.user_id)  GROUP BY id LIMIT ${limit} OFFSET ${offset}`;
 
-        db.all(sq, [], (err, rows) => {
+        db.all(countQuery, [], (err, count) => {
             if (err) {
                 throw err;
             }
-            res.send(rows)
+            db.all(pageQuery, [], (err, rows) => {
+                if (err) {
+                    throw err;
+                }
+                res.send({rows, count: count[0].rowCount})
+            });
         });
+
+
     });
 
     router.get('/:id', function (req, res) {
